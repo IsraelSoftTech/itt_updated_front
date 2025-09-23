@@ -1,0 +1,72 @@
+import './Home.css'
+import { useState } from 'react'
+import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
+import { postJson } from '../utils/api'
+
+function Contact() {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [sent, setSent] = useState(false)
+
+  function handleChange(e) {
+    const { name, value } = e.target
+    setForm((p)=> ({ ...p, [name]: value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    try {
+      await postJson('/api/contact', form)
+      setSent(true)
+      setForm({ name: '', email: '', phone: '', message: '' })
+    } catch (err) {
+      alert('Failed to send message: ' + err.message)
+    }
+  }
+
+  return (
+    <div className="contact">
+      <section className="hero" style={{ backgroundImage: "linear-gradient(180deg, rgba(4,22,47,0.6), rgba(4,22,47,0.4)), url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop')" }}>
+        <div className="container hero-inner">
+          <h1>Contact Us</h1>
+          <p className="sub">Send us a message and we’ll respond quickly.</p>
+        </div>
+      </section>
+
+      <section className="popular">
+        <div className="container">
+          <div className="card" style={{maxWidth: 720, margin: '0 auto'}}>
+            <div className="card-body">
+              {sent ? (
+                <p>Thanks! Your message has been sent.</p>
+              ) : (
+              <form className="form-grid" onSubmit={handleSubmit}>
+                <label>
+                  <span>Name</span>
+                  <input name="name" value={form.name} onChange={handleChange} required />
+                </label>
+                <label>
+                  <span>Email</span>
+                  <input type="email" name="email" value={form.email} onChange={handleChange} required />
+                </label>
+                <label>
+                  <span>Phone</span>
+                  <input name="phone" value={form.phone} onChange={handleChange} />
+                </label>
+                <label>
+                  <span>Message</span>
+                  <input name="message" value={form.message} onChange={handleChange} required />
+                </label>
+                <button className="primary" type="submit">Send Message</button>
+              </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+export default Contact
+
+
