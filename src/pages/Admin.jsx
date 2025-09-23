@@ -228,6 +228,9 @@ function Admin() {
                       <span>Upload Hero Background</span>
                       <input type="file" accept="image/*" onChange={(e)=>uploadHeroBg(e.target.files && e.target.files[0])} />
                     </label>
+                <div>
+                  <button className="primary" type="button" onClick={saveHome}>Save Home</button>
+                </div>
                     <div className="card" style={{padding:12}}>
                       <strong>Homepage Stats</strong>
                       {stats.map((s,i)=> (
