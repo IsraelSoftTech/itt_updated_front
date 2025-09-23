@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS } from '../utils/storage'
 import { postJson, getContent } from '../utils/api'
 
 function Trainings() {
@@ -11,16 +11,10 @@ function Trainings() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    setItems(loadContent(STORAGE_KEYS.TRAININGS, []))
-    const m = loadContent(STORAGE_KEYS.TRAININGS_META, null)
-    if (m) setMeta(m)
-    const fd = loadContent(STORAGE_KEYS.TRAININGS_FORM, [])
-    setFormDef(fd)
-
-    // Also fetch latest from backend to reflect admin updates
-    getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) { setItems(srv); saveContent(STORAGE_KEYS.TRAININGS, srv) } })
-    getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) { setMeta(srv); saveContent(STORAGE_KEYS.TRAININGS_META, srv) } })
-    getContent(STORAGE_KEYS.TRAININGS_FORM, null).then((srv)=>{ if (srv) { setFormDef(srv); saveContent(STORAGE_KEYS.TRAININGS_FORM, srv) } })
+    // Load exclusively from backend
+    getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setItems(srv) })
+    getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setMeta(srv) })
+    getContent(STORAGE_KEYS.TRAININGS_FORM, null).then((srv)=>{ if (srv) setFormDef(srv) })
   }, [])
 
   function handleChange(name, type, value, files) {

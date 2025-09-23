@@ -3,7 +3,7 @@ export function loadContent(key, fallback) {
     const raw = localStorage.getItem(key)
     if (!raw) return fallback
     return JSON.parse(raw)
-  } catch (_) {
+  } catch {
     return fallback
   }
 }
@@ -12,7 +12,7 @@ export function saveContent(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value))
     return true
-  } catch (_) {
+  } catch {
     return false
   }
 }

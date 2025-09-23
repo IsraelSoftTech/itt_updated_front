@@ -35,35 +35,19 @@ function Admin() {
   const [trainingSubmits, setTrainingSubmits] = useState([])
 
   useEffect(() => {
-    const h = loadContent(STORAGE_KEYS.HOME, null)
-    if (h) { setHomeTitle(h.title || homeTitle); setHomeSub(h.sub || homeSub); setHeroBg(h.heroBg || heroBg) }
+    // Load exclusively from backend; keep local saves only for instant preview during editing.
     getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeTitle(srv.title || homeTitle); setHomeSub(srv.sub || homeSub); setHeroBg(srv.heroBg || heroBg) }})
-    const a = loadContent(STORAGE_KEYS.ABOUT, null)
-    if (a) { setAboutWho(a.who || aboutWho) }
     getContent(STORAGE_KEYS.ABOUT, null).then((srv)=>{ if (srv) setAboutWho(srv.who || aboutWho) })
-    const st = loadContent(STORAGE_KEYS.HOME_STATS, null)
-    if (st) setStats(st)
     getContent(STORAGE_KEYS.HOME_STATS, null).then((srv)=>{ if (srv) setStats(srv) })
-    const ft = loadContent(STORAGE_KEYS.HOME_FEATURES, null)
-    if (ft) setFeatures(ft)
     getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) setFeatures(srv) })
-    const ts = loadContent(STORAGE_KEYS.HOME_TESTIMONIALS, null)
-    if (ts) {
-      setTestiTitle(ts.title || testiTitle)
-      setTestiSub(ts.subtitle || testiSub)
-      if (Array.isArray(ts.items)) setTestimonials(ts.items)
-    }
     getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
-    const tm = loadContent(STORAGE_KEYS.ABOUT_TEAM, null)
-    if (tm) setTeam(tm)
-    setServices(loadContent(STORAGE_KEYS.SERVICES, [])); getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv) setServices(srv) })
-    setProjects(loadContent(STORAGE_KEYS.PROJECTS, [])); getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setProjects(srv) })
-    setTrainings(loadContent(STORAGE_KEYS.TRAININGS, [])); getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setTrainings(srv) })
-    const tmeta = loadContent(STORAGE_KEYS.TRAININGS_META, null)
-    if (tmeta) setTrainingsMeta(tmeta)
-    setMessages(loadContent(STORAGE_KEYS.CONTACT_MESSAGES, []))
-    setTrainingForm(loadContent(STORAGE_KEYS.TRAININGS_FORM, []))
-    setTrainingSubmits(loadContent(STORAGE_KEYS.TRAININGS_SUBMITS, []))
+    getContent(STORAGE_KEYS.ABOUT_TEAM, null).then((srv)=>{ if (srv) setTeam(srv) })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv) setServices(srv) })
+    getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setProjects(srv) })
+    getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setTrainings(srv) })
+    getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setTrainingsMeta(srv) })
+    getJson('/api/trainings/submits').then((rows)=> setTrainingSubmits(rows || [])).catch(()=>{})
+    getJson('/api/contact').then((rows)=> setMessages(rows || [])).catch(()=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -109,6 +93,7 @@ function Admin() {
   function addService() {
     const next = [...services, { title: '', copy: '', img: '' }]
     setServices(next)
+    // Optional local cache for instant UI, but server is source of truth
     saveContent(STORAGE_KEYS.SERVICES, next)
     setContent(STORAGE_KEYS.SERVICES, next)
   }
@@ -175,7 +160,14 @@ function Admin() {
   function uploadHeroBg(file) {
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => { setHeroBg(reader.result); saveContent(STORAGE_KEYS.HOME, { title: homeTitle, sub: homeSub, heroBg: reader.result }) }
+    reader.onload = () => {
+      const payload = { title: homeTitle, sub: homeSub, heroBg: reader.result }
+      setHeroBg(reader.result)
+      // Save to local cache for instant preview
+      saveContent(STORAGE_KEYS.HOME, payload)
+      // Also persist to backend immediately so clearing browser data won't wipe it
+      setContent(STORAGE_KEYS.HOME, payload)
+    }
     reader.readAsDataURL(file)
   }
 

@@ -1,14 +1,12 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { loadContent, STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Services() {
   const [items, setItems] = useState([])
 
   useEffect(() => {
-    const s = loadContent(STORAGE_KEYS.SERVICES, null)
-    if (s && Array.isArray(s) && s.length) setItems(s)
     getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setItems(srv); else setItems([]) })
   }, [])
 

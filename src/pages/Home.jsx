@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { loadContent, STORAGE_KEYS, saveContent } from '../utils/storage'
+import { STORAGE_KEYS } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Home() {
@@ -21,23 +21,11 @@ function Home() {
   ])
 
   useEffect(() => {
-    const h = loadContent(STORAGE_KEYS.HOME, null)
-    if (h) setHomeDynamic({ title: h.title || homeDynamic.title, sub: h.sub || homeDynamic.sub, heroBg: h.heroBg || null })
-    const s = loadContent(STORAGE_KEYS.SERVICES, null)
-    if (s && Array.isArray(s) && s.length) setServicesDynamic(s)
-    const ft = loadContent(STORAGE_KEYS.HOME_FEATURES, null)
-    if (ft) setFeatures(ft)
-    const ts = loadContent(STORAGE_KEYS.HOME_TESTIMONIALS, null)
-    if (ts) {
-      setTestiTitle(ts.title || testiTitle)
-      setTestiSub(ts.subtitle || testiSub)
-      if (Array.isArray(ts.items)) setTestimonials(ts.items)
-    }
-    // Server content (preferred)
-    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }); saveContent(STORAGE_KEYS.HOME, srv) } })
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv); saveContent(STORAGE_KEYS.SERVICES, srv) } else { setServicesDynamic([]) } })
-    getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv); saveContent(STORAGE_KEYS.HOME_FEATURES, srv) } })
-    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items); saveContent(STORAGE_KEYS.HOME_TESTIMONIALS, srv) } })
+    // Load exclusively from backend (Neon-backed API)
+    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }) } })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv) } else { setServicesDynamic([]) } })
+    getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv) } })
+    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [tIndex, setTIndex] = useState(0)
