@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { loadContent, STORAGE_KEYS } from '../utils/storage'
+import { loadContent, STORAGE_KEYS, saveContent } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Home() {
@@ -34,10 +34,10 @@ function Home() {
       if (Array.isArray(ts.items)) setTestimonials(ts.items)
     }
     // Server content (preferred)
-    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }) })
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setServicesDynamic(srv) })
-    getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) setFeatures(srv) })
-    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
+    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }); saveContent(STORAGE_KEYS.HOME, srv) } })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv); saveContent(STORAGE_KEYS.SERVICES, srv) } })
+    getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv); saveContent(STORAGE_KEYS.HOME_FEATURES, srv) } })
+    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items); saveContent(STORAGE_KEYS.HOME_TESTIMONIALS, srv) } })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [tIndex, setTIndex] = useState(0)
