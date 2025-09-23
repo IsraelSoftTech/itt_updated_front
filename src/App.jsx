@@ -60,7 +60,7 @@ function App() {
       <div className="app">
         <Loader show={loading} text="Izzy Tech Team" />
         {!isAdminRoute && (
-        <header className="site-header">
+        <header className="site-header" style={{ animation: 'fadeIn 400ms ease both' }}>
           <div className="container header-inner">
             <Link to="/" className="brand">
               <img src={new URL('./assets/logo.png', import.meta.url).href} alt="Izzy Tech Team" style={{ height: 28, verticalAlign: 'middle', marginRight: 8 }} />
@@ -81,7 +81,7 @@ function App() {
           </div>
         </header>
         )}
-        <main>
+        <main style={{ animation: 'fadeUp 600ms ease both 120ms' }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
@@ -93,7 +93,7 @@ function App() {
           </Routes>
         </main>
         {!isAdminRoute && (
-        <footer className="site-footer">
+        <footer className="site-footer" style={{ animation: 'fadeIn 400ms ease both 160ms' }}>
           <div className="container">
             <p>© {new Date().getFullYear()} Izzy Tech Team. All rights reserved.</p>
           </div>

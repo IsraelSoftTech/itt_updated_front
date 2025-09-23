@@ -4,19 +4,12 @@ import { loadContent, STORAGE_KEYS } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Services() {
-  const [items, setItems] = useState([
-    { title: 'Sales of Electronics', copy: 'Top‑quality, durable electronic devices at fair prices.', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1600&auto=format&fit=crop' },
-    { title: 'Web Development', copy: 'High‑performing, user‑friendly websites and web apps.', img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop' },
-    { title: 'Application Development', copy: 'Secure, scalable mobile and desktop applications.', img: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1600&auto=format&fit=crop' },
-    { title: 'Cloud & DevOps', copy: 'Optimize, automate and accelerate delivery in the cloud.', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop' },
-    { title: 'Graphics & Printing', copy: 'Logos, banners, T‑shirts and brand materials that impress.', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop' },
-    { title: 'Maintenance & Support', copy: 'Hardware/software debugging, lifetime reliability.', img: 'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1600&auto=format&fit=crop' },
-  ])
+  const [items, setItems] = useState([])
 
   useEffect(() => {
     const s = loadContent(STORAGE_KEYS.SERVICES, null)
     if (s && Array.isArray(s) && s.length) setItems(s)
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setItems(srv) })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setItems(srv); else setItems([]) })
   }, [])
 
   return (
@@ -31,7 +24,7 @@ function Services() {
       <section className="popular">
         <div className="container">
           <div className="card-grid">
-            {items.map((s) => (
+            {items.length > 0 ? items.map((s) => (
               <article className="card" key={s.title}>
                 <div className="media" style={{ backgroundImage: `url(${s.img})` }} />
                 <div className="card-body">
@@ -39,7 +32,9 @@ function Services() {
                   <p className="muted">{s.copy}</p>
                 </div>
               </article>
-            ))}
+            )) : (
+              <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>No services yet. Please check back soon.</p>
+            )}
           </div>
         </div>
       </section>

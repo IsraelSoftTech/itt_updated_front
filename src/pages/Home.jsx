@@ -35,7 +35,7 @@ function Home() {
     }
     // Server content (preferred)
     getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }); saveContent(STORAGE_KEYS.HOME, srv) } })
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv); saveContent(STORAGE_KEYS.SERVICES, srv) } })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv); saveContent(STORAGE_KEYS.SERVICES, srv) } else { setServicesDynamic([]) } })
     getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv); saveContent(STORAGE_KEYS.HOME_FEATURES, srv) } })
     getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items); saveContent(STORAGE_KEYS.HOME_TESTIMONIALS, srv) } })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -85,17 +85,8 @@ function Home() {
             <p>We sell quality, we design, we develop, we secure, we deploy, we train.</p>
           </div>
 
-          {/* tabs removed as requested */}
-
           <div className="card-grid">
-            {(servicesDynamic || [
-              { title: 'Sales of Electronics', img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1600&auto=format&fit=crop', copy: 'Top‑quality, durable electronic devices at fair prices.', details: 'We import and supply reliable laptops, phones, accessories and other electronics with warranties and after‑sales support.' },
-              { title: 'Web Development', img: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop', copy: 'High‑performing, user‑friendly websites and web apps.', details: 'From corporate sites to custom web applications with secure APIs, analytics and SEO.' },
-              { title: 'Application Development', img: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1600&auto=format&fit=crop', copy: 'Secure, scalable mobile and desktop applications.', details: 'Native and cross‑platform apps, deployment to stores, CI/CD and monitoring.' },
-              { title: 'Cloud & DevOps', img: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop', copy: 'Optimize, automate and accelerate delivery in the cloud.', details: 'AWS/Azure/GCP, containers, pipelines, IaC and cost optimization.' },
-              { title: 'Graphics & Printing', img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop', copy: 'Logos, banners, T‑shirts, and brand materials that impress.', details: 'Creative brand identity, marketing assets and high‑quality print delivery.' },
-              { title: 'Maintenance & Support', img: 'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=1600&auto=format&fit=crop', copy: 'Hardware/software debugging, lifetime reliability.', details: 'Proactive monitoring, updates, backups and helpdesk.' },
-            ]).map((card) => (
+            {Array.isArray(servicesDynamic) && servicesDynamic.length > 0 ? servicesDynamic.map((card) => (
               <article className="card" key={card.title}>
                 <div className="media" style={{ backgroundImage: `url(${card.img})` }} />
                 <div className="card-body">
@@ -106,7 +97,9 @@ function Home() {
                   </div>
                 </div>
               </article>
-            ))}
+            )) : (
+              <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>No services yet. Please check back soon.</p>
+            )}
           </div>
         </div>
       </section>
