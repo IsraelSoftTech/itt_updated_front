@@ -47,7 +47,7 @@
 
 .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-.card .media { background-size: cover; background-position: center; height: 200px; }
+.card .media { background-size: contain; background-position: center; background-repeat: no-repeat; background-color: #f1f5f9; height: 200px; }
 .card-body { padding: 14px; display: grid; gap: 10px; }
 .card h3 { margin: 0; font-size: 18px; }
 .card .muted { color: #475569; font-size: 14px; }
@@ -59,7 +59,7 @@
 /* Team avatars */
 .team-card { align-items: stretch; }
 .team-card .card-body { padding-top: 10px; }
-.avatar { width: 100%; height: 220px; background: #e2e8f0 center/cover no-repeat; }
+.avatar { width: 100%; height: 220px; background: #e2e8f0 center/contain no-repeat; }
 
 .site-footer { border-top: 1px solid #eef0f4; padding: 24px 0; color: #475569; }
 
