@@ -59,7 +59,7 @@
 /* Team avatars */
 .team-card { align-items: stretch; }
 .team-card .card-body { padding-top: 10px; }
-.avatar { width: 100%; height: 220px; background: #e2e8f0 center/contain no-repeat; }
+.avatar { width: 100%; aspect-ratio: 1 / 1; height: auto; background: #e2e8f0 center/cover no-repeat; }
 
 .site-footer { border-top: 1px solid #eef0f4; padding: 24px 0; color: #475569; }
 
