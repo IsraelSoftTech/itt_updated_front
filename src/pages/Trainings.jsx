@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { postJson, getContent } from '../utils/api'
 
 function Trainings() {
@@ -15,6 +15,15 @@ function Trainings() {
     getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setItems(srv) })
     getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setMeta(srv) })
     getContent(STORAGE_KEYS.TRAININGS_FORM, null).then((srv)=>{ if (srv) setFormDef(srv) })
+  }, [])
+
+  useEffect(() => {
+    const off = addContentListener((key, value) => {
+      if (key === STORAGE_KEYS.TRAININGS) setItems(Array.isArray(value) ? value : [])
+      if (key === STORAGE_KEYS.TRAININGS_META) setMeta(value || meta)
+      if (key === STORAGE_KEYS.TRAININGS_FORM) setFormDef(Array.isArray(value) ? value : [])
+    })
+    return off
   }, [])
 
   function handleChange(name, type, value, files) {

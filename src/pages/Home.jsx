@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Home() {
+  const DEFAULT_HOME = { title: 'Build Your Dream Software', sub: 'We craft secure, scalable products for startups, SMEs and enterprises.', heroBg: null }
   const [query, setQuery] = useState('')
   const [openService, setOpenService] = useState(null)
-  const [homeDynamic, setHomeDynamic] = useState({ title: 'Build Your Dream Software', sub: 'We craft secure, scalable products for startups, SMEs and enterprises.', heroBg: null })
+  const [homeDynamic, setHomeDynamic] = useState(DEFAULT_HOME)
   const [servicesDynamic, setServicesDynamic] = useState(null)
+  const [filteredServices, setFilteredServices] = useState([])
   const [features, setFeatures] = useState(['Fast Services','Cloud','Training/Internship','High Ratings','Quality Visions','Excellence'])
   const [testiTitle, setTestiTitle] = useState('What People Say')
   const [testiSub, setTestiSub] = useState('Clients trust us for reliability, usability and speed.')
@@ -22,21 +24,67 @@ function Home() {
 
   useEffect(() => {
     // Load exclusively from backend (Neon-backed API)
-    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || homeDynamic.title, sub: srv.sub || homeDynamic.sub, heroBg: srv.heroBg || null }) } })
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) { setServicesDynamic(srv) } else { setServicesDynamic([]) } })
+    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || DEFAULT_HOME.title, sub: srv.sub || DEFAULT_HOME.sub, heroBg: srv.heroBg || null }) } })
+    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{
+      if (srv && Array.isArray(srv) && srv.length) {
+        setServicesDynamic(srv)
+        setFilteredServices(srv)
+      } else {
+        setServicesDynamic([])
+        setFilteredServices([])
+      }
+    })
     getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv) } })
-    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || testiTitle); setTestiSub(srv.subtitle || testiSub); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || 'What People Say'); setTestiSub(srv.subtitle || 'Clients trust us for reliability, usability and speed.'); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
   }, [])
   const [tIndex, setTIndex] = useState(0)
   const nextT = () => setTIndex((tIndex + 1) % testimonials.length)
   const prevT = () => setTIndex((tIndex - 1 + testimonials.length) % testimonials.length)
+  // Live content updates from Admin
+  useEffect(() => {
+    const off = addContentListener((key, value) => {
+      switch (key) {
+        case STORAGE_KEYS.HOME: {
+          if (value) setHomeDynamic({ title: value.title || DEFAULT_HOME.title, sub: value.sub || DEFAULT_HOME.sub, heroBg: value.heroBg || null })
+          break
+        }
+        case STORAGE_KEYS.HOME_FEATURES: {
+          if (value) setFeatures(value)
+          break
+        }
+        case STORAGE_KEYS.HOME_TESTIMONIALS: {
+          if (value) { setTestiTitle(value.title || 'What People Say'); setTestiSub(value.subtitle || 'Clients trust us for reliability, usability and speed.'); if (Array.isArray(value.items)) setTestimonials(value.items) }
+          break
+        }
+        case STORAGE_KEYS.SERVICES: {
+          const list = Array.isArray(value) ? value : []
+          setServicesDynamic(list)
+          const q = (query || '').trim().toLowerCase()
+          setFilteredServices(!q ? list : list.filter((s)=>`${s.title||''} ${s.copy||''}`.toLowerCase().includes(q)))
+          break
+        }
+        default:
+          break
+      }
+    })
+    return off
+  }, [query])
 
   function handleSearch(event) {
     event.preventDefault()
-    // In a later iteration, wire to backend search endpoint
-    alert(`Searching for: ${query || 'all'}`)
+    // No-op on submit; filtering happens reactively as query changes
   }
+
+  useEffect(() => {
+    if (!Array.isArray(servicesDynamic)) { setFilteredServices([]); return }
+    const q = (query || '').trim().toLowerCase()
+    if (!q) { setFilteredServices(servicesDynamic); return }
+    const next = servicesDynamic.filter((s) => {
+      const hay = `${s.title || ''} ${s.copy || ''}`.toLowerCase()
+      return hay.includes(q)
+    })
+    setFilteredServices(next)
+  }, [query, servicesDynamic])
 
   return (
     <div className="home">
@@ -74,7 +122,7 @@ function Home() {
           </div>
 
           <div className="card-grid">
-            {Array.isArray(servicesDynamic) && servicesDynamic.length > 0 ? servicesDynamic.map((card) => (
+            {Array.isArray(filteredServices) && filteredServices.length > 0 ? filteredServices.map((card) => (
               <article className="card" key={card.title}>
                 <div className="media" style={{ backgroundImage: `url(${card.img})` }} />
                 <div className="card-body">
@@ -86,7 +134,7 @@ function Home() {
                 </div>
               </article>
             )) : (
-              <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>No services yet. Please check back soon.</p>
+              <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>{(query || '').trim() ? 'No matching services.' : 'No services yet. Please check back soon.'}</p>
             )}
           </div>
         </div>

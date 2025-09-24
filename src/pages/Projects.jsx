@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { loadContent, STORAGE_KEYS } from '../utils/storage'
+import { loadContent, STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Projects() {
@@ -9,6 +9,13 @@ function Projects() {
   useEffect(() => {
     setItems(loadContent(STORAGE_KEYS.PROJECTS, []))
     getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setItems(srv) })
+  }, [])
+
+  useEffect(() => {
+    const off = addContentListener((key, value) => {
+      if (key === STORAGE_KEYS.PROJECTS) setItems(Array.isArray(value) ? value : [])
+    })
+    return off
   }, [])
 
   return (

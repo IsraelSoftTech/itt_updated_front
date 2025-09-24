@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Services() {
@@ -8,6 +8,13 @@ function Services() {
 
   useEffect(() => {
     getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setItems(srv); else setItems([]) })
+  }, [])
+
+  useEffect(() => {
+    const off = addContentListener((key, value) => {
+      if (key === STORAGE_KEYS.SERVICES) setItems(Array.isArray(value) ? value : [])
+    })
+    return off
   }, [])
 
   return (

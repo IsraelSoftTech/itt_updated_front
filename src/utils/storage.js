@@ -11,6 +11,12 @@ export function loadContent(key, fallback) {
 export function saveContent(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value))
+    // Notify this tab immediately
+    try {
+      window.dispatchEvent(new CustomEvent('content:update', { detail: { key, value } }))
+    } catch (err) {
+      console.warn('content:update dispatch failed', err)
+    }
     return true
   } catch {
     return false
@@ -33,6 +39,31 @@ export const STORAGE_KEYS = {
   TRAININGS_FORM: 'izzy_content_trainings_form',
   TRAININGS_SUBMITS: 'izzy_content_trainings_submits',
   CONTACT_MESSAGES: 'izzy_contact_messages',
+}
+
+export function addContentListener(handler) {
+  const onCustom = (e) => {
+    try {
+      handler(e.detail && e.detail.key, e.detail && e.detail.value)
+    } catch (err) {
+      console.warn('content:update handler error', err)
+    }
+  }
+  const onStorage = (e) => {
+    try {
+      if (!e || !e.key) return
+      const parsed = e.newValue ? JSON.parse(e.newValue) : undefined
+      handler(e.key, parsed)
+    } catch (err) {
+      console.warn('storage event handler error', err)
+    }
+  }
+  window.addEventListener('content:update', onCustom)
+  window.addEventListener('storage', onStorage)
+  return () => {
+    window.removeEventListener('content:update', onCustom)
+    window.removeEventListener('storage', onStorage)
+  }
 }
 
 
