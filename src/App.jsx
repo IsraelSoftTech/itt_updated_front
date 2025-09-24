@@ -10,6 +10,8 @@ import Trainings from './pages/Trainings'
 import Admin from './pages/Admin'
 import Contact from './pages/Contact'
 import Loader from './components/Loader'
+import { STORAGE_KEYS, saveContent } from './utils/storage'
+import { getContent } from './utils/api'
 
 function App() {
   const location = useLocation()
@@ -27,6 +29,26 @@ function App() {
 
   useEffect(() => {
     // Initial app load: show loader for 3s
+    // Kick off background preload of all admin-managed content during splash
+    ;(async () => {
+      try {
+        const tasks = [
+          getContent(STORAGE_KEYS.HOME, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.HOME, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.HOME_FEATURES, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.HOME_FEATURES, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.HOME_TESTIMONIALS, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.ABOUT, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.ABOUT, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.ABOUT_TEAM, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.ABOUT_TEAM, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.SERVICES, null).then((v)=> Array.isArray(v) && saveContent(STORAGE_KEYS.SERVICES, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.PROJECTS, null).then((v)=> Array.isArray(v) && saveContent(STORAGE_KEYS.PROJECTS, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.TRAININGS, null).then((v)=> Array.isArray(v) && saveContent(STORAGE_KEYS.TRAININGS, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.TRAININGS_META, null).then((v)=> v!=null && saveContent(STORAGE_KEYS.TRAININGS_META, v)).catch(()=>{}),
+          getContent(STORAGE_KEYS.TRAININGS_FORM, null).then((v)=> Array.isArray(v) && saveContent(STORAGE_KEYS.TRAININGS_FORM, v)).catch(()=>{}),
+        ]
+        await Promise.allSettled(tasks)
+      } catch (err) {
+        console.warn('Preload failed', err)
+      }
+    })()
     const timer = setTimeout(() => setLoading(false), 3000)
     return () => clearTimeout(timer)
   }, [])
