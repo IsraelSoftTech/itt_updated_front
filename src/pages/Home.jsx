@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
@@ -9,6 +9,7 @@ function Home() {
   const DEFAULT_HOME = { title: 'Build Your Dream Software', sub: 'We craft secure, scalable products for startups, SMEs and enterprises.', heroBg: null }
   const [query, setQuery] = useState('')
   const [openService, setOpenService] = useState(null)
+  const cardRefs = useRef(new Map())
   const [homeDynamic, setHomeDynamic] = useState(DEFAULT_HOME)
   const [servicesDynamic, setServicesDynamic] = useState(null)
   const [filteredServices, setFilteredServices] = useState([])
@@ -36,7 +37,7 @@ function Home() {
     })
     getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv) } })
     getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || 'What People Say'); setTestiSub(srv.subtitle || 'Clients trust us for reliability, usability and speed.'); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
-  }, [])
+  }, [DEFAULT_HOME.title, DEFAULT_HOME.sub])
   const [tIndex, setTIndex] = useState(0)
   const nextT = () => setTIndex((tIndex + 1) % testimonials.length)
   const prevT = () => setTIndex((tIndex - 1 + testimonials.length) % testimonials.length)
@@ -68,11 +69,40 @@ function Home() {
       }
     })
     return off
-  }, [query])
+  }, [query, DEFAULT_HOME.title, DEFAULT_HOME.sub])
 
   function handleSearch(event) {
     event.preventDefault()
     // No-op on submit; filtering happens reactively as query changes
+  }
+
+  function generateServiceDetails(svc) {
+    if (svc && typeof svc.details === 'string' && svc.details.trim().length > 40) return svc.details
+    const title = (svc?.title || 'Our Service').trim()
+    const summary = (svc?.copy || '').trim()
+    const benefitLines = [
+      `End‑to‑end ${title.toLowerCase()} tailored to your business goals.`,
+      'Modern architectures for performance, security and scalability.',
+      'Clear delivery milestones, transparent pricing and continuous support.',
+      'Zero‑downtime deployments and robust monitoring from day one.'
+    ]
+    const bullets = benefitLines.map((b) => `• ${b}`).join('\n')
+    const lead = summary ? `${summary}` : `Expert ${title.toLowerCase()} that ships fast without compromising quality.`
+    return `${lead}\n\nWhat you get:\n${bullets}\n\nOutcomes:\n• Faster time‑to‑value\n• Reduced technical risk\n• Maintainable code and great UX`
+  }
+
+  function toggleService(card) {
+    const isOpen = openService && openService.title === card.title
+    const next = isOpen ? null : card
+    setOpenService(next)
+    // On mobile, ensure expanded card stays in context
+    const isMobile = window.matchMedia('(max-width: 640px)').matches
+    if (!isOpen && isMobile) {
+      const el = cardRefs.current.get(card.title)
+      if (el && typeof el.scrollIntoView === 'function') {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+      }
+    }
   }
 
   useEffect(() => {
@@ -123,13 +153,16 @@ function Home() {
 
           <div className="card-grid">
             {Array.isArray(filteredServices) && filteredServices.length > 0 ? filteredServices.map((card) => (
-              <article className="card" key={card.title}>
+              <article className="card" key={card.title} ref={(el)=>{ if (el) cardRefs.current.set(card.title, el) }}>
                 <div className="media" style={{ backgroundImage: `url(${card.img})` }} />
                 <div className="card-body">
                   <h3>{card.title}</h3>
                   <p className="muted">{card.copy}</p>
                   <div className="meta">
-                    <button className="primary" type="button" onClick={() => setOpenService(card)}>Explore More</button>
+                    <button className="primary" type="button" onClick={() => toggleService(card)}>{openService && openService.title === card.title ? 'Close' : 'Explore More'}</button>
+                  </div>
+                  <div className={`details ${openService && openService.title === card.title ? 'open' : ''}`}>
+                    <pre className="details-text">{generateServiceDetails(card)}</pre>
                   </div>
                 </div>
               </article>
@@ -146,20 +179,7 @@ function Home() {
         </div>
       </section>
 
-      {openService && (
-        <div className="modal" onClick={() => setOpenService(null)}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-media" style={{ backgroundImage: `url(${openService.img})` }} />
-            <div className="modal-body">
-              <h3>{openService.title}</h3>
-              <p>{openService.details || openService.copy}</p>
-              <div className="modal-actions">
-                <button className="primary" type="button" onClick={() => setOpenService(null)}>Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Inline expansion replaces modal for better mobile UX */}
 
       <section className="testimonials">
         <div className="container">

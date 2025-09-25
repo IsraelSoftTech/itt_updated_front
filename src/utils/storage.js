@@ -34,6 +34,7 @@ export const STORAGE_KEYS = {
   ABOUT_HIGHLIGHTS: 'izzy_content_about_highlights',
   SERVICES: 'izzy_content_services',
   PROJECTS: 'izzy_content_projects',
+  PRODUCTS: 'izzy_content_products',
   TRAININGS: 'izzy_content_trainings',
   TRAININGS_META: 'izzy_content_trainings_meta',
   TRAININGS_FORM: 'izzy_content_trainings_form',

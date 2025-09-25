@@ -4,7 +4,7 @@ import { getContent, setContent, getJson } from '../utils/api'
 import './Home.css'
 
 function Admin() {
-  const sections = ['Home Contents','About Contents','Services Contents','Projects Contents','Trainings Contents','Training Submits','Contact Messages']
+  const sections = ['Home Contents','About Contents','Services Contents','Projects Contents','Products Contents','Products Orders','Trainings Contents','Training Submits','Contact Messages']
   const [active, setActive] = useState(sections[0])
   const [homeTitle, setHomeTitle] = useState('Build Your Dream Software')
   const [homeSub, setHomeSub] = useState('We craft secure, scalable products for startups, SMEs and enterprises.')
@@ -29,10 +29,12 @@ function Admin() {
   const [services, setServices] = useState([])
   const [projects, setProjects] = useState([])
   const [trainings, setTrainings] = useState([])
+  const [products, setProducts] = useState([])
   const [trainingsMeta, setTrainingsMeta] = useState({ title: 'Become an Intern', subtitle: 'Apply to our internship program and acquire real industry skills.' })
   const [messages, setMessages] = useState([])
   const [trainingForm, setTrainingForm] = useState([]) // [{name:'fullName', label:'Full Name', type:'text', required:true}]
   const [trainingSubmits, setTrainingSubmits] = useState([])
+  const [productOrders, setProductOrders] = useState([])
 
   useEffect(() => {
     // Load exclusively from backend; keep local saves only for instant preview during editing.
@@ -45,8 +47,18 @@ function Admin() {
     getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv) setServices(srv) })
     getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setProjects(srv) })
     getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setTrainings(srv) })
+    getContent(STORAGE_KEYS.PRODUCTS, null).then((srv)=>{ if (srv) setProducts(srv) })
     getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setTrainingsMeta(srv) })
     getJson('/api/trainings/submits').then((rows)=> setTrainingSubmits(rows || [])).catch(()=>{})
+    getJson('/api/products/orders').then((rows)=> setProductOrders(rows || [])).catch(async ()=>{
+      // Fallback: read from site_content key if endpoint is unavailable on remote
+      try {
+        const alt = await getContent('izzy_product_orders', [])
+        setProductOrders(Array.isArray(alt) ? alt : [])
+      } catch {
+        setProductOrders([])
+      }
+    })
     getJson('/api/contact').then((rows)=> setMessages(rows || [])).catch(()=>{})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -58,6 +70,18 @@ function Admin() {
       getJson('/api/trainings/submits')
         .then((rows)=> setTrainingSubmits(rows || []))
         .catch(()=> setTrainingSubmits(loadContent(STORAGE_KEYS.TRAININGS_SUBMITS, [])))
+    }
+    if (active === 'Products Orders') {
+      getJson('/api/products/orders')
+        .then((rows)=> setProductOrders(rows || []))
+        .catch(async ()=>{
+          try {
+            const alt = await getContent('izzy_product_orders', [])
+            setProductOrders(Array.isArray(alt) ? alt : [])
+          } catch {
+            setProductOrders([])
+          }
+        })
     }
     if (active === 'Contact Messages') {
       getJson('/api/contact')
@@ -117,6 +141,27 @@ function Admin() {
     setProjects(next)
     saveContent(STORAGE_KEYS.PROJECTS, next)
     setContent(STORAGE_KEYS.PROJECTS, next)
+  }
+  function addProduct() {
+    const next = [...products, { title: '', copy: '', img: '', price: '' }]
+    setProducts(next)
+    saveContent(STORAGE_KEYS.PRODUCTS, next)
+    setContent(STORAGE_KEYS.PRODUCTS, next)
+  }
+  function updateProduct(index, field, value) {
+    const next = products.map((p,i)=> i===index ? { ...p, [field]: value } : p)
+    setProducts(next)
+    saveContent(STORAGE_KEYS.PRODUCTS, next)
+    setContent(STORAGE_KEYS.PRODUCTS, next)
+  }
+  function uploadProductImage(index, file) {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => updateProduct(index, 'img', reader.result)
+    reader.readAsDataURL(file)
+  }
+  async function saveProducts() {
+    try { await setContent(STORAGE_KEYS.PRODUCTS, products); alert('Products saved') } catch (e) { alert('Failed to save Products: ' + e.message) }
   }
   function updateProject(index, field, value) {
     const next = projects.map((p,i)=> i===index ? { ...p, [field]: value } : p)
@@ -325,6 +370,53 @@ function Admin() {
                     <div>
                       <button className="primary" type="button" onClick={saveProjects}>Save Projects</button>
                     </div>
+                  </div>
+                ) : active === 'Products Contents' ? (
+                  <div className="form-grid">
+                    <button className="primary" type="button" onClick={addProduct}>+ Add Product</button>
+                    {products.map((p, i) => (
+                      <div key={i} className="card" style={{padding:12}}>
+                        <div className="form-grid">
+                          <label><span>Title</span><input value={p.title} onChange={(e)=>updateProduct(i,'title',e.target.value)} /></label>
+                          <label><span>Short Description</span><input value={p.copy} onChange={(e)=>updateProduct(i,'copy',e.target.value)} /></label>
+                          <label><span>Price</span><input value={p.price} onChange={(e)=>updateProduct(i,'price',e.target.value)} /></label>
+                          <label><span>Image URL</span><input value={p.img} onChange={(e)=>updateProduct(i,'img',e.target.value)} /></label>
+                          <label><span>Upload Image</span><input type="file" accept="image/*" onChange={(e)=>uploadProductImage(i, e.target.files && e.target.files[0])} /></label>
+                          <button className="danger" type="button" onClick={()=>{const next = products.filter((_,idx)=>idx!==i); setProducts(next); saveContent(STORAGE_KEYS.PRODUCTS,next)}}>Delete</button>
+                        </div>
+                      </div>
+                    ))}
+                    <div>
+                      <button className="primary" type="button" onClick={saveProducts}>Save Products</button>
+                    </div>
+                  </div>
+                ) : active === 'Products Orders' ? (
+                  <div className="form-grid">
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                      <strong>Orders</strong>
+                      <button className="primary" type="button" onClick={()=>{ 
+                        getJson('/api/products/orders').then((rows)=> setProductOrders(rows || [])).catch(async ()=>{
+                          try { const alt = await getContent('izzy_product_orders', []); setProductOrders(Array.isArray(alt)?alt:[]) } catch {}
+                        })
+                      }}>Refresh</button>
+                    </div>
+                    {productOrders.length === 0 ? <p className="muted">No orders yet.</p> : productOrders.map((o,i)=> (
+                      <div key={i} className="card" style={{padding:12}}>
+                        <div className="card-body">
+                          <strong>{new Date(o.createdAt).toLocaleString()}</strong>
+                          <p><strong>Name:</strong> {o.values?.name}</p>
+                          <p><strong>Email:</strong> {o.values?.email}</p>
+                          <p><strong>Phone:</strong> {o.values?.phone}</p>
+                          <p><strong>Total:</strong> {o.values?.total}</p>
+                          <div>
+                            <strong>Items</strong>
+                            <ul>
+                              {(o.values?.items||[]).map((it,idx)=>(<li key={idx}>{it.title} — {it.price}</li>))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : active === 'Trainings Contents' ? (
                   <div className="form-grid">

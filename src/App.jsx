@@ -7,6 +7,7 @@ import About from './pages/About'
 import Services from './pages/Services'
 import Projects from './pages/Projects'
 import Trainings from './pages/Trainings'
+import Products from './pages/Products'
 import Admin from './pages/Admin'
 import Contact from './pages/Contact'
 import Loader from './components/Loader'
@@ -107,6 +108,7 @@ function App() {
               <NavLink to="/about" className={({isActive}) => isActive ? 'active' : undefined}>About</NavLink>
               <NavLink to="/services" className={({isActive}) => isActive ? 'active' : undefined}>Services</NavLink>
               <NavLink to="/projects" className={({isActive}) => isActive ? 'active' : undefined}>Projects</NavLink>
+              <NavLink to="/products" className={({isActive}) => isActive ? 'active' : undefined}>Products</NavLink>
               <NavLink to="/trainings" className={({isActive}) => isActive ? 'active' : undefined}>Trainings</NavLink>
               <NavLink to="/contact" className={({isActive}) => isActive ? 'active' : undefined}>Contact</NavLink>
               <a className="admin" onClick={handleAdminClick}>Admin</a>
@@ -120,6 +122,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/products" element={<Products />} />
             <Route path="/trainings" element={<Trainings />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/contact" element={<Contact />} />
