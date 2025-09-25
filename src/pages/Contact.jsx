@@ -34,6 +34,23 @@ function Contact() {
 
       <section className="popular">
         <div className="container">
+          <div className="card" style={{overflow:'hidden'}}>
+            <div className="card-body" style={{padding:0}}>
+              <iframe
+                title="Our location - Google Maps"
+                src="https://www.google.com/maps?q=Izzy%20Tech%20Team&z=15&output=embed"
+                style={{ border: 0, width: '100%', height: 380 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="popular">
+        <div className="container">
           <div className="card" style={{maxWidth: 720, margin: '0 auto'}}>
             <div className="card-body">
               {sent ? (
