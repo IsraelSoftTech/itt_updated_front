@@ -1,13 +1,13 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { loadContent, STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function Projects() {
   const [items, setItems] = useState([])
+  const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    setItems(loadContent(STORAGE_KEYS.PROJECTS, []))
     getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setItems(srv) })
   }, [])
 
@@ -36,7 +36,7 @@ function Projects() {
           ) : (
             <div className="card-grid">
               {items.map((p) => (
-                <article className="card" key={p.title}>
+                <article className="card" key={p.title} onClick={() => setSelected(p)} style={{ cursor: 'pointer' }}>
                   {p.img && <div className="media" style={{ backgroundImage: `url(${p.img})` }} />}
                   <div className="card-body">
                     <h3>{p.title}</h3>
@@ -48,6 +48,22 @@ function Projects() {
           )}
         </div>
       </section>
+    {selected && (
+      <div className="modal" onClick={() => setSelected(null)}>
+        <div className="modal-dialog" onClick={(e)=>e.stopPropagation()} style={{ maxWidth: 960, width: '100%' }}>
+          <div className="modal-body">
+            {selected.img && (
+              <div style={{ width: '100%', paddingBottom: '56.25%', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${selected.img})`, borderRadius: 8 }} />
+            )}
+            <div style={{ marginTop: 12 }}>
+              <h3 style={{ marginBottom: 6 }}>{selected.title}</h3>
+              {selected.client && <p className="muted" style={{ marginBottom: 8 }}><strong>Client:</strong> {selected.client}</p>}
+              {selected.copy && <p className="muted">{selected.copy}</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   )
 }

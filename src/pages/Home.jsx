@@ -24,7 +24,7 @@ function Home() {
   ])
 
   useEffect(() => {
-    // Load exclusively from backend (Neon-backed API)
+    // Fetch fresh from Firebase
     getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || DEFAULT_HOME.title, sub: srv.sub || DEFAULT_HOME.sub, heroBg: srv.heroBg || null }) } })
     getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{
       if (srv && Array.isArray(srv) && srv.length) {

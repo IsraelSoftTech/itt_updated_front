@@ -11,7 +11,6 @@ function Trainings() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    // Load exclusively from backend
     getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setItems(srv) })
     getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setMeta(srv) })
     getContent(STORAGE_KEYS.TRAININGS_FORM, null).then((srv)=>{ if (srv) setFormDef(srv) })

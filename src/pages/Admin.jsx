@@ -361,6 +361,7 @@ function Admin() {
                         <div className="form-grid">
                           <label><span>Title</span><input value={p.title} onChange={(e)=>updateProject(i,'title',e.target.value)} /></label>
                           <label><span>Copy</span><input value={p.copy} onChange={(e)=>updateProject(i,'copy',e.target.value)} /></label>
+                          <label><span>Client Name</span><input value={p.client || ''} onChange={(e)=>updateProject(i,'client',e.target.value)} placeholder="e.g. ACME Corp" /></label>
                           <label><span>Image URL</span><input value={p.img} onChange={(e)=>updateProject(i,'img',e.target.value)} /></label>
                           <label><span>Upload Image</span><input type="file" accept="image/*" onChange={(e)=>uploadProjectImage(i, e.target.files && e.target.files[0])} /></label>
                           <button className="danger" type="button" onClick={()=>{const next = projects.filter((_,idx)=>idx!==i); setProjects(next); saveContent(STORAGE_KEYS.PROJECTS,next)}}>Delete</button>

@@ -30,8 +30,7 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Initial app load: show loader for 3s
-    // Kick off background preload of all admin-managed content during splash
+    // Kick off background preload of all admin-managed content (non-blocking)
     ;(async () => {
       try {
         const tasks = [
@@ -51,8 +50,7 @@ function App() {
         console.warn('Preload failed', err)
       }
     })()
-    const timer = setTimeout(() => setLoading(false), 3000)
-    return () => clearTimeout(timer)
+    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -66,10 +64,8 @@ function App() {
   }, [])
 
   useEffect(() => {
-    // Route change: show loader for 3s
-    setLoading(true)
-    const timer = setTimeout(() => setLoading(false), 3000)
-    return () => clearTimeout(timer)
+    // Route change: do not delay rendering
+    setLoading(false)
   }, [location.pathname])
 
   function handleAdminClick(e) {

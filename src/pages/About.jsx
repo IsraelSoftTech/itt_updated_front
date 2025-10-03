@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { loadContent, STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent } from '../utils/api'
 
 function About() {
@@ -10,10 +10,6 @@ function About() {
   const [who, setWho] = useState('Izzy Tech Team is a computer engineering company focused on building secure, reliable and scalable solutions while training the next generation.')
 
   useEffect(() => {
-    const tm = loadContent(STORAGE_KEYS.ABOUT_TEAM, null)
-    if (tm) setTeam(tm)
-    const a = loadContent(STORAGE_KEYS.ABOUT, null)
-    if (a && a.who) setWho(a.who)
     getContent(STORAGE_KEYS.ABOUT_TEAM, null).then((srv)=>{ if (srv) setTeam(srv) })
     getContent(STORAGE_KEYS.ABOUT, null).then((srv)=>{ if (srv && srv.who) setWho(srv.who) })
   }, [])

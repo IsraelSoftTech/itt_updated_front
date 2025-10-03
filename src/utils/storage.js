@@ -1,26 +1,21 @@
-export function loadContent(key, fallback) {
+import { db, dbRef, dbGet, dbSet, onValue, dbOff } from './firebase'
+
+export async function loadContent(key, fallback) {
   try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw)
-  } catch {
-    return fallback
-  }
+    const snap = await dbGet(dbRef(db, `site_content/${key}`))
+    if (snap.exists()) return snap.val()
+  } catch { /* no-op: fall back below */ }
+  return fallback
 }
 
-export function saveContent(key, value) {
+export async function saveContent(key, value) {
   try {
-    localStorage.setItem(key, JSON.stringify(value))
-    // Notify this tab immediately
+    await dbSet(dbRef(db, `site_content/${key}`), value ?? null)
     try {
       window.dispatchEvent(new CustomEvent('content:update', { detail: { key, value } }))
-    } catch (err) {
-      console.warn('content:update dispatch failed', err)
-    }
+    } catch { /* ignore dispatch failures */ }
     return true
-  } catch {
-    return false
-  }
+  } catch { return false }
 }
 
 export const STORAGE_KEYS = {
@@ -44,26 +39,22 @@ export const STORAGE_KEYS = {
 
 export function addContentListener(handler) {
   const onCustom = (e) => {
-    try {
-      handler(e.detail && e.detail.key, e.detail && e.detail.value)
-    } catch (err) {
-      console.warn('content:update handler error', err)
-    }
-  }
-  const onStorage = (e) => {
-    try {
-      if (!e || !e.key) return
-      const parsed = e.newValue ? JSON.parse(e.newValue) : undefined
-      handler(e.key, parsed)
-    } catch (err) {
-      console.warn('storage event handler error', err)
-    }
+    try { handler(e.detail && e.detail.key, e.detail && e.detail.value) } catch { /* ignore handler errors */ }
   }
   window.addEventListener('content:update', onCustom)
-  window.addEventListener('storage', onStorage)
+
+  const watchers = []
+  const keys = Object.values(STORAGE_KEYS)
+  keys.forEach((key) => {
+    const r = dbRef(db, `site_content/${key}`)
+    const unsub = onValue(r, (snap) => {
+      handler(key, snap.exists() ? snap.val() : undefined)
+    })
+    watchers.push({ r, unsub })
+  })
   return () => {
     window.removeEventListener('content:update', onCustom)
-    window.removeEventListener('storage', onStorage)
+    watchers.forEach(({ r }) => dbOff(r))
   }
 }
 

@@ -1,6 +1,6 @@
 import './Products.css'
 import { useEffect, useMemo, useState } from 'react'
-import { STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/storage'
 import { getContent, postJson, getJson, setContent } from '../utils/api'
 import { FiShoppingCart, FiX } from 'react-icons/fi'
 
@@ -15,6 +15,14 @@ function Products() {
       if (Array.isArray(srv)) setItems(srv)
       else setItems([])
     })
+  }, [])
+
+  useEffect(() => {
+    // Live updates from Admin saves
+    const off = addContentListener((key, value) => {
+      if (key === STORAGE_KEYS.PRODUCTS) setItems(Array.isArray(value) ? value : [])
+    })
+    return off
   }, [])
 
   function getPriceNumber(p) {
