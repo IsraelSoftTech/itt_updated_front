@@ -11,7 +11,7 @@ import Products from './pages/Products'
 import Admin from './pages/Admin'
 import Contact from './pages/Contact'
 import Loader from './components/Loader'
-import { STORAGE_KEYS } from './utils/storage'
+import { STORAGE_KEYS } from './utils/content'
 
 function App() {
   const location = useLocation()

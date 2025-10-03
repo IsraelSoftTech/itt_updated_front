@@ -1,7 +1,8 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS, addContentListener } from '../utils/storage'
-import { postJson, getContent } from '../utils/api'
+import { STORAGE_KEYS, addContentListener } from '../utils/content'
+import { getContent } from '../utils/api'
+import { db, dbRef, push, serverTimestamp } from '../utils/firebase'
 
 function Trainings() {
   const [items, setItems] = useState([])
@@ -40,7 +41,7 @@ function Trainings() {
   async function handleSubmit(e) {
     e.preventDefault()
     try {
-      await postJson('/api/trainings/submit', { values: formValues })
+      await push(dbRef(db, 'training_submits'), { createdAt: serverTimestamp(), values: formValues })
       setSent(true)
       setFormValues({})
     } catch (err) {

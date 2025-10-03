@@ -1,25 +1,31 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/content'
+import Loader from '../components/Loader'
 import { getContent } from '../utils/api'
 
 function Projects() {
   const [items, setItems] = useState([])
   const [selected, setSelected] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ if (srv) setItems(srv) })
+    getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ setItems(Array.isArray(srv)?srv:[]) }).finally(()=> setLoading(false))
   }, [])
 
   useEffect(() => {
     const off = addContentListener((key, value) => {
-      if (key === STORAGE_KEYS.PROJECTS) setItems(Array.isArray(value) ? value : [])
+      if (key === STORAGE_KEYS.PROJECTS) {
+        setItems(Array.isArray(value) ? value : [])
+        setLoading(false)
+      }
     })
     return off
   }, [])
 
   return (
     <div className="projects">
+      <Loader show={loading} />
       <section className="hero" style={{ backgroundImage: "linear-gradient(180deg, rgba(4,22,47,0.6), rgba(4,22,47,0.4)), url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2000&auto=format&fit=crop')" }}>
         <div className="container hero-inner">
           <h1>Projects</h1>
@@ -30,8 +36,7 @@ function Projects() {
         <div className="container">
           {items.length === 0 ? (
             <div className="section-head center">
-              <h2>No projects yet</h2>
-              <p>Add projects in the Admin panel to see them here.</p>
+              <h2>No projects</h2>
             </div>
           ) : (
             <div className="card-grid">

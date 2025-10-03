@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/content'
+import Loader from '../components/Loader'
 
 function Home() {
   const DEFAULT_HOME = { title: 'Build Your Dream Software', sub: 'We craft secure, scalable products for startups, SMEs and enterprises.', heroBg: null }
@@ -13,6 +14,7 @@ function Home() {
   const [servicesDynamic, setServicesDynamic] = useState(null)
   const [filteredServices, setFilteredServices] = useState([])
   const [features, setFeatures] = useState(['Fast Services','Cloud','Training/Internship','High Ratings','Quality Visions','Excellence'])
+  const [loading, setLoading] = useState(true)
   const [testiTitle, setTestiTitle] = useState('What People Say')
   const [testiSub, setTestiSub] = useState('Clients trust us for reliability, usability and speed.')
   const [testimonials, setTestimonials] = useState([
@@ -34,6 +36,7 @@ function Home() {
       switch (key) {
         case STORAGE_KEYS.HOME: {
           if (value) setHomeDynamic({ title: value.title || DEFAULT_HOME.title, sub: value.sub || DEFAULT_HOME.sub, heroBg: value.heroBg || null })
+          setLoading(false)
           break
         }
         case STORAGE_KEYS.HOME_FEATURES: {
@@ -49,6 +52,7 @@ function Home() {
           setServicesDynamic(list)
           const q = (query || '').trim().toLowerCase()
           setFilteredServices(!q ? list : list.filter((s)=>`${s.title||''} ${s.copy||''}`.toLowerCase().includes(q)))
+          setLoading(false)
           break
         }
         default:
@@ -105,6 +109,7 @@ function Home() {
 
   return (
     <div className="home">
+      <Loader show={loading} />
       <section className="hero" style={homeDynamic.heroBg ? { backgroundImage: `linear-gradient(180deg, rgba(4,22,47,0.6), rgba(4,22,47,0.4)), url(${homeDynamic.heroBg})` } : undefined}>
         <div className="container hero-inner">
           <h1>{homeDynamic.title}</h1>

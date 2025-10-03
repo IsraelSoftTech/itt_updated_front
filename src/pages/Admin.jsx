@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
-import { getContent, setContent, getJson } from '../utils/api'
+import { saveContent, STORAGE_KEYS } from '../utils/content'
+import { getContent, setContent } from '../utils/api'
 import { db, dbRef, onValue } from '../utils/firebase'
 import './Home.css'
 
@@ -51,17 +51,25 @@ function Admin() {
     getContent(STORAGE_KEYS.TRAININGS, null).then((srv)=>{ if (srv) setTrainings(srv) })
     getContent(STORAGE_KEYS.PRODUCTS, null).then((srv)=>{ if (srv) setProducts(srv) })
     getContent(STORAGE_KEYS.TRAININGS_META, null).then((srv)=>{ if (srv) setTrainingsMeta(srv) })
-    getJson('/api/trainings/submits').then((rows)=> setTrainingSubmits(rows || [])).catch(()=>{})
-    getJson('/api/products/orders').then((rows)=> setProductOrders(rows || [])).catch(async ()=>{
-      // Fallback: read from site_content key if endpoint is unavailable on remote
-      try {
-        const alt = await getContent('izzy_product_orders', [])
-        setProductOrders(Array.isArray(alt) ? alt : [])
-      } catch {
-        setProductOrders([])
-      }
+    // Subscribe lists directly from Firebase
+    onValue(dbRef(db, 'training_submits'), (snap) => {
+      const list = []
+      snap.forEach((child) => list.push({ id: child.key, ...child.val() }))
+      list.sort((a,b)=> (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
+      setTrainingSubmits(list)
     })
-    getJson('/api/contact').then((rows)=> setMessages(rows || [])).catch(()=>{})
+    onValue(dbRef(db, 'product_orders'), (snap) => {
+      const list = []
+      snap.forEach((child) => list.push({ id: child.key, ...child.val() }))
+      list.sort((a,b)=> (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
+      setProductOrders(list)
+    })
+    onValue(dbRef(db, 'contact_messages'), (snap) => {
+      const list = []
+      snap.forEach((child) => list.push({ id: child.key, ...child.val() }))
+      list.sort((a,b)=> (b.created_at?.toMillis?.() || 0) - (a.created_at?.toMillis?.() || 0))
+      setMessages(list)
+    })
     // Monitor: subscribe to analytics/visits
     const r = dbRef(db, 'analytics/visits')
     const unsub = onValue(r, (snap) => {
@@ -75,29 +83,7 @@ function Admin() {
 
   // Reload submissions/messages when switching tabs
   useEffect(() => {
-    if (active === 'Training Submits') {
-      // Prefer backend
-      getJson('/api/trainings/submits')
-        .then((rows)=> setTrainingSubmits(rows || []))
-        .catch(()=> setTrainingSubmits(loadContent(STORAGE_KEYS.TRAININGS_SUBMITS, [])))
-    }
-    if (active === 'Products Orders') {
-      getJson('/api/products/orders')
-        .then((rows)=> setProductOrders(rows || []))
-        .catch(async ()=>{
-          try {
-            const alt = await getContent('izzy_product_orders', [])
-            setProductOrders(Array.isArray(alt) ? alt : [])
-          } catch {
-            setProductOrders([])
-          }
-        })
-    }
-    if (active === 'Contact Messages') {
-      getJson('/api/contact')
-        .then((rows)=> setMessages(rows || []))
-        .catch(()=> setMessages(loadContent(STORAGE_KEYS.CONTACT_MESSAGES, [])))
-    }
+    // no-op; using realtime subscriptions above
   }, [active])
 
   function saveHome() {

@@ -1,6 +1,6 @@
 import './Products.css'
 import { useEffect, useMemo, useState } from 'react'
-import { STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/content'
 import { getContent } from '../utils/api'
 import { db, dbRef, push, serverTimestamp } from '../utils/firebase'
 import { FiShoppingCart, FiX } from 'react-icons/fi'

@@ -1,22 +1,4 @@
-import { db, dbRef, dbGet, dbSet, onValue, dbOff } from './firebase'
-
-export async function loadContent(key, fallback) {
-  try {
-    const snap = await dbGet(dbRef(db, `site_content/${key}`))
-    if (snap.exists()) return snap.val()
-  } catch { /* no-op: fall back below */ }
-  return fallback
-}
-
-export async function saveContent(key, value) {
-  try {
-    await dbSet(dbRef(db, `site_content/${key}`), value ?? null)
-    try {
-      window.dispatchEvent(new CustomEvent('content:update', { detail: { key, value } }))
-    } catch { /* ignore dispatch failures */ }
-    return true
-  } catch { return false }
-}
+import { db, dbRef, onValue, dbOff, dbSet } from './firebase'
 
 export const STORAGE_KEYS = {
   HOME: 'izzy_content_home',
@@ -38,24 +20,27 @@ export const STORAGE_KEYS = {
 }
 
 export function addContentListener(handler) {
-  const onCustom = (e) => {
-    try { handler(e.detail && e.detail.key, e.detail && e.detail.value) } catch { /* ignore handler errors */ }
-  }
-  window.addEventListener('content:update', onCustom)
-
   const watchers = []
   const keys = Object.values(STORAGE_KEYS)
   keys.forEach((key) => {
     const r = dbRef(db, `site_content/${key}`)
-    const unsub = onValue(r, (snap) => {
+    onValue(r, (snap) => {
       handler(key, snap.exists() ? snap.val() : undefined)
     })
-    watchers.push({ r, unsub })
+    
+    watchers.push({ r })
   })
   return () => {
-    window.removeEventListener('content:update', onCustom)
     watchers.forEach(({ r }) => dbOff(r))
   }
+}
+
+export async function saveContent(key, value) {
+  try {
+    await dbSet(dbRef(db, `site_content/${key}`), value ?? null)
+    try { window.dispatchEvent(new CustomEvent('content:update', { detail: { key, value } })) } catch { /* ignore */ }
+    return true
+  } catch { return false }
 }
 
 

@@ -1,6 +1,6 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
-import { STORAGE_KEYS, addContentListener } from '../utils/storage'
+import { STORAGE_KEYS, addContentListener } from '../utils/content'
 import { getContent } from '../utils/api'
 
 function About() {

@@ -1,6 +1,6 @@
 import './Home.css'
 import { useState } from 'react'
-import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
+import { STORAGE_KEYS } from '../utils/content'
 import { db, dbRef, push, serverTimestamp } from '../utils/firebase'
 
 function Contact() {
