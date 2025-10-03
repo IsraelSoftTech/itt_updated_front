@@ -117,15 +117,10 @@ function Admin() {
   function addService() {
     const next = [...services, { title: '', copy: '', img: '' }]
     setServices(next)
-    // Optional local cache for instant UI, but server is source of truth
-    saveContent(STORAGE_KEYS.SERVICES, next)
-    setContent(STORAGE_KEYS.SERVICES, next)
   }
   function updateService(index, field, value) {
     const next = services.map((s,i)=> i===index ? { ...s, [field]: value } : s)
     setServices(next)
-    saveContent(STORAGE_KEYS.SERVICES, next)
-    setContent(STORAGE_KEYS.SERVICES, next)
   }
   async function saveServices() {
     try { await setContent(STORAGE_KEYS.SERVICES, services); alert('Services saved') } catch (e) { alert('Failed to save Services: ' + e.message) }
@@ -139,20 +134,14 @@ function Admin() {
   function addProject() {
     const next = [...projects, { title: '', copy: '', img: '' }]
     setProjects(next)
-    saveContent(STORAGE_KEYS.PROJECTS, next)
-    setContent(STORAGE_KEYS.PROJECTS, next)
   }
   function addProduct() {
     const next = [...products, { title: '', copy: '', img: '', price: '' }]
     setProducts(next)
-    saveContent(STORAGE_KEYS.PRODUCTS, next)
-    setContent(STORAGE_KEYS.PRODUCTS, next)
   }
   function updateProduct(index, field, value) {
     const next = products.map((p,i)=> i===index ? { ...p, [field]: value } : p)
     setProducts(next)
-    saveContent(STORAGE_KEYS.PRODUCTS, next)
-    setContent(STORAGE_KEYS.PRODUCTS, next)
   }
   function uploadProductImage(index, file) {
     if (!file) return
@@ -166,8 +155,6 @@ function Admin() {
   function updateProject(index, field, value) {
     const next = projects.map((p,i)=> i===index ? { ...p, [field]: value } : p)
     setProjects(next)
-    saveContent(STORAGE_KEYS.PROJECTS, next)
-    setContent(STORAGE_KEYS.PROJECTS, next)
   }
   async function saveProjects() {
     try { await setContent(STORAGE_KEYS.PROJECTS, projects); alert('Projects saved') } catch (e) { alert('Failed to save Projects: ' + e.message) }
@@ -181,14 +168,10 @@ function Admin() {
   function addTraining() {
     const next = [...trainings, { title: '', copy: '', img: '' }]
     setTrainings(next)
-    saveContent(STORAGE_KEYS.TRAININGS, next)
-    setContent(STORAGE_KEYS.TRAININGS, next)
   }
   function updateTraining(index, field, value) {
     const next = trainings.map((t,i)=> i===index ? { ...t, [field]: value } : t)
     setTrainings(next)
-    saveContent(STORAGE_KEYS.TRAININGS, next)
-    setContent(STORAGE_KEYS.TRAININGS, next)
   }
   async function saveTrainings() {
     try { await setContent(STORAGE_KEYS.TRAININGS, trainings); alert('Trainings saved') } catch (e) { alert('Failed to save Trainings: ' + e.message) }
