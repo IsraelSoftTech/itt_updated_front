@@ -1,5 +1,5 @@
 import './Home.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { STORAGE_KEYS, addContentListener } from '../utils/content'
 import Loader from '../components/Loader'
 import { getContent } from '../utils/api'
@@ -8,6 +8,7 @@ function Projects() {
   const [items, setItems] = useState([])
   const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(true)
+  const cardRefs = useRef(new Map())
 
   useEffect(() => {
     getContent(STORAGE_KEYS.PROJECTS, null).then((srv)=>{ setItems(Array.isArray(srv)?srv:[]) }).finally(()=> setLoading(false))
@@ -22,6 +23,19 @@ function Projects() {
     })
     return off
   }, [])
+
+  function toggleProject(card) {
+    const isOpen = selected && selected.title === card.title
+    const next = isOpen ? null : card
+    setSelected(next)
+    const isMobile = window.matchMedia('(max-width: 640px)').matches
+    if (!isOpen && isMobile) {
+      const el = cardRefs.current.get(card.title)
+      if (el && typeof el.scrollIntoView === 'function') {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+      }
+    }
+  }
 
   return (
     <div className="projects">
@@ -41,11 +55,25 @@ function Projects() {
           ) : (
             <div className="card-grid">
               {items.map((p) => (
-                <article className="card" key={p.title} onClick={() => setSelected(p)} style={{ cursor: 'pointer' }}>
+                <article className="card" key={p.title} ref={(el)=>{ if (el) cardRefs.current.set(p.title, el) }}>
                   {p.img && <div className="media" style={{ backgroundImage: `url(${p.img})` }} />}
                   <div className="card-body">
                     <h3>{p.title}</h3>
                     <p className="muted">{p.copy}</p>
+                    <div className="meta">
+                      <button className="primary" type="button" onClick={()=>toggleProject(p)}>{selected && selected.title === p.title ? 'Close' : 'View Details'}</button>
+                    </div>
+                    <div className={`details ${selected && selected.title === p.title ? 'open' : ''}`}>
+                      {selected && selected.title === p.title && (
+                        <div>
+                          {p.img && (
+                            <div style={{ width: '100%', paddingBottom: '56.25%', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${p.img})`, borderRadius: 8, marginBottom: 12 }} />
+                          )}
+                          {p.client && <p className="muted" style={{ marginBottom: 8 }}><strong>Client:</strong> {p.client}</p>}
+                          {p.copy && <p className="muted">{p.copy}</p>}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </article>
               ))}
@@ -53,22 +81,6 @@ function Projects() {
           )}
         </div>
       </section>
-    {selected && (
-      <div className="modal" onClick={() => setSelected(null)}>
-        <div className="modal-dialog" onClick={(e)=>e.stopPropagation()} style={{ maxWidth: 960, width: '100%' }}>
-          <div className="modal-body">
-            {selected.img && (
-              <div style={{ width: '100%', paddingBottom: '56.25%', backgroundSize: 'cover', backgroundPosition: 'center', backgroundImage: `url(${selected.img})`, borderRadius: 8 }} />
-            )}
-            <div style={{ marginTop: 12 }}>
-              <h3 style={{ marginBottom: 6 }}>{selected.title}</h3>
-              {selected.client && <p className="muted" style={{ marginBottom: 8 }}><strong>Client:</strong> {selected.client}</p>}
-              {selected.copy && <p className="muted">{selected.copy}</p>}
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
     </div>
   )
 }
