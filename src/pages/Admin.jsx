@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
 import { getContent, setContent, getJson } from '../utils/api'
+import { db, dbRef, onValue } from '../utils/firebase'
 import './Home.css'
 
 function Admin() {
-  const sections = ['Home Contents','About Contents','Services Contents','Projects Contents','Products Contents','Products Orders','Trainings Contents','Training Submits','Contact Messages']
+  const sections = ['Home Contents','About Contents','Services Contents','Projects Contents','Products Contents','Products Orders','Trainings Contents','Training Submits','Contact Messages','Monitor']
   const [active, setActive] = useState(sections[0])
   const [homeTitle, setHomeTitle] = useState('Build Your Dream Software')
   const [homeSub, setHomeSub] = useState('We craft secure, scalable products for startups, SMEs and enterprises.')
@@ -35,6 +36,7 @@ function Admin() {
   const [trainingForm, setTrainingForm] = useState([]) // [{name:'fullName', label:'Full Name', type:'text', required:true}]
   const [trainingSubmits, setTrainingSubmits] = useState([])
   const [productOrders, setProductOrders] = useState([])
+  const [visits, setVisits] = useState([])
 
   useEffect(() => {
     // Load exclusively from backend; keep local saves only for instant preview during editing.
@@ -60,6 +62,14 @@ function Admin() {
       }
     })
     getJson('/api/contact').then((rows)=> setMessages(rows || [])).catch(()=>{})
+    // Monitor: subscribe to analytics/visits
+    const r = dbRef(db, 'analytics/visits')
+    const unsub = onValue(r, (snap) => {
+      const list = []
+      snap.forEach((child) => { list.push({ id: child.key, ...child.val() }) })
+      list.sort((a,b)=> (b.ts?.toMillis?.() || 0) - (a.ts?.toMillis?.() || 0))
+      setVisits(list)
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -454,6 +464,27 @@ function Admin() {
                         <button className="primary" type="button" onClick={async ()=>{ try { await setContent(STORAGE_KEYS.TRAININGS_FORM, trainingForm); alert('Training form saved') } catch (e) { alert('Failed to save form: ' + e.message) } }}>Save Form</button>
                       </div>
                     </div>
+                  </div>
+                ) : active === 'Monitor' ? (
+                  <div className="form-grid">
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                      <strong>Visits Today</strong>
+                      <span className="muted">Total: {visits.length}</span>
+                    </div>
+                    {visits.length === 0 ? <p className="muted">No visits tracked yet.</p> : (
+                      <div className="card" style={{padding:12}}>
+                        <div className="card-body">
+                          {visits.map((v)=> (
+                            <div key={v.id} className="form-grid" style={{gridTemplateColumns:'1fr 1fr 2fr 2fr'}}>
+                              <span>{v.ts?.toDate ? new Date(v.ts.toDate()).toLocaleString() : (v.ts || '')}</span>
+                              <span>{v.path}</span>
+                              <span className="muted">{v.ip || 'N/A'}</span>
+                              <span className="muted">{v.ua?.slice(0,100)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="form-grid">

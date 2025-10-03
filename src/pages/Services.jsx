@@ -1,13 +1,12 @@
 import './Home.css'
 import { useEffect, useState } from 'react'
 import { STORAGE_KEYS, addContentListener } from '../utils/storage'
-import { getContent } from '../utils/api'
 
 function Services() {
   const [items, setItems] = useState([])
 
   useEffect(() => {
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{ if (srv && Array.isArray(srv) && srv.length) setItems(srv); else setItems([]) })
+    // initial state comes from realtime listener below
   }, [])
 
   useEffect(() => {

@@ -1,7 +1,8 @@
 import './Products.css'
 import { useEffect, useMemo, useState } from 'react'
 import { STORAGE_KEYS, addContentListener } from '../utils/storage'
-import { getContent, postJson, getJson, setContent } from '../utils/api'
+import { getContent } from '../utils/api'
+import { db, dbRef, push, serverTimestamp } from '../utils/firebase'
 import { FiShoppingCart, FiX } from 'react-icons/fi'
 
 function Products() {
@@ -56,31 +57,10 @@ function Products() {
 
   function handlePlaceOrder(e) {
     e.preventDefault()
-    // Persist to backend for Admin -> Product Orders only (no WhatsApp redirect)
     const payload = { name: order.name, email: order.email, phone: order.phone, items: selected.map(p=>({ title:p.title, price:getPriceLabel(p) })), total: total.toFixed(2) }
-    postJson('/api/products/orders', { values: payload })
-      .then(()=>{
-        setShowOrder(false)
-        setSelected([])
-        alert('Order placed')
-      })
-      .catch(async (err)=>{
-        // Fallback for backends without the dedicated endpoint: store under site_content key
-        try {
-          if (String(err.message || '').includes('404')) {
-            const KEY = 'izzy_product_orders'
-            let existing = []
-            try { existing = await getContent(KEY, []) } catch {}
-            const toSave = Array.isArray(existing) ? [...existing, { createdAt: new Date().toISOString(), values: payload }] : [{ createdAt: new Date().toISOString(), values: payload }]
-            await setContent(KEY, toSave)
-            setShowOrder(false)
-            setSelected([])
-            alert('Order placed')
-            return
-          }
-        } catch {}
-        alert('Failed to place order: ' + err.message)
-      })
+    push(dbRef(db, 'product_orders'), { createdAt: serverTimestamp(), values: payload })
+      .then(()=>{ setShowOrder(false); setSelected([]); alert('Order placed') })
+      .catch((err)=> alert('Failed to place order: ' + err.message))
   }
 
   return (

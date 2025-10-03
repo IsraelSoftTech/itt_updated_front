@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import './Home.css'
 import { FiMapPin, FiLayers, FiDollarSign, FiSearch, FiUsers, FiTrendingUp, FiPackage, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { STORAGE_KEYS, addContentListener } from '../utils/storage'
-import { getContent } from '../utils/api'
 
 function Home() {
   const DEFAULT_HOME = { title: 'Build Your Dream Software', sub: 'We craft secure, scalable products for startups, SMEs and enterprises.', heroBg: null }
@@ -24,19 +23,7 @@ function Home() {
   ])
 
   useEffect(() => {
-    // Fetch fresh from Firebase
-    getContent(STORAGE_KEYS.HOME, null).then((srv)=>{ if (srv) { setHomeDynamic({ title: srv.title || DEFAULT_HOME.title, sub: srv.sub || DEFAULT_HOME.sub, heroBg: srv.heroBg || null }) } })
-    getContent(STORAGE_KEYS.SERVICES, null).then((srv)=>{
-      if (srv && Array.isArray(srv) && srv.length) {
-        setServicesDynamic(srv)
-        setFilteredServices(srv)
-      } else {
-        setServicesDynamic([])
-        setFilteredServices([])
-      }
-    })
-    getContent(STORAGE_KEYS.HOME_FEATURES, null).then((srv)=>{ if (srv) { setFeatures(srv) } })
-    getContent(STORAGE_KEYS.HOME_TESTIMONIALS, null).then((srv)=>{ if (srv) { setTestiTitle(srv.title || 'What People Say'); setTestiSub(srv.subtitle || 'Clients trust us for reliability, usability and speed.'); if (Array.isArray(srv.items)) setTestimonials(srv.items) } })
+    // initial state will come via realtime listeners
   }, [DEFAULT_HOME.title, DEFAULT_HOME.sub])
   const [tIndex, setTIndex] = useState(0)
   const nextT = () => setTIndex((tIndex + 1) % testimonials.length)

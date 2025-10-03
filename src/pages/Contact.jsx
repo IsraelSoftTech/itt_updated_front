@@ -1,7 +1,7 @@
 import './Home.css'
 import { useState } from 'react'
 import { loadContent, saveContent, STORAGE_KEYS } from '../utils/storage'
-import { postJson } from '../utils/api'
+import { db, dbRef, push, serverTimestamp } from '../utils/firebase'
 
 function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
@@ -15,7 +15,7 @@ function Contact() {
   async function handleSubmit(e) {
     e.preventDefault()
     try {
-      await postJson('/api/contact', form)
+      await push(dbRef(db, 'contact_messages'), { ...form, created_at: serverTimestamp() })
       setSent(true)
       setForm({ name: '', email: '', phone: '', message: '' })
     } catch (err) {
