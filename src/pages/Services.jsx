@@ -40,7 +40,7 @@ function Services() {
                 </div>
               </article>
             )) : (
-              <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>No services yet. Please check back soon.</p>
+              !loading ? <p className="muted" style={{gridColumn:'1 / -1', textAlign:'center'}}>No services.</p> : null
             )}
           </div>
         </div>

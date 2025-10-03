@@ -1,11 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function Loader({ show }) {
   const [visible, setVisible] = useState(show)
   const [showLogo, setShowLogo] = useState(false)
+  const startRef = useRef(0)
+  const MIN_VISIBLE_MS = 800
 
   useEffect(() => {
-    setVisible(show)
+    if (show) {
+      startRef.current = Date.now()
+      setVisible(true)
+      return
+    }
+    const elapsed = Date.now() - (startRef.current || 0)
+    const remaining = Math.max(0, MIN_VISIBLE_MS - elapsed)
+    const t = setTimeout(() => setVisible(false), remaining)
+    return () => clearTimeout(t)
   }, [show])
 
   useEffect(() => {
