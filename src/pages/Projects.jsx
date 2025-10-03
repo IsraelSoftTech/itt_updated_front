@@ -34,7 +34,7 @@ function Projects() {
       </section>
       <section className="popular">
         <div className="container">
-          {items.length === 0 ? (
+          {!loading && items.length === 0 ? (
             <div className="section-head center">
               <h2>No projects</h2>
             </div>
